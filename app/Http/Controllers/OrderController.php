@@ -11,7 +11,7 @@ class OrderController extends Controller
 {
     function placeOrder(Request $request){
 		$validator = Validator::make($request->all(),[
-			'user_id'=>'required|exists:users,id',
+			//'user_id'=>'required|exists:users,id',
 			'shipping_address'=>'required'
 		],[
 			'user_id.required'=>'Please login',
@@ -28,7 +28,7 @@ class OrderController extends Controller
 			$price = $request->price;
 			$quantity = $request->quantity;
 			$order = Order::create([
-				'user_id'=>$request->user_id,
+				'user_id'=>$request->user()->id,
 				'total_amount'=>$price*$quantity,
 				'shipping_address'=>$request->shipping_address,
 				'notes'=>$request->notes
@@ -38,6 +38,8 @@ class OrderController extends Controller
 					'quantity' => $quantity,
 					'price' => $price
 				]);
+				
+				Product::where('id', $request->product_id)->decrement('stock', $quantity);
 				
 				return response()->json([
 					'status'=>true,
